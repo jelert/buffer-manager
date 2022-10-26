@@ -65,12 +65,20 @@ BufMgr::~BufMgr() {
 
 const Status BufMgr::allocBuf(int & frame) 
 {
+    //If refbit == 1
+    //  set refbit 0 
+    //  goto increment clock
 
+    //Check current clock position if not pinned and refbit 0
+    //if pincount == 0
+    //  if dirty
+    //      flush page
+    //  use page
+    //  make sure flags are set correctly (pinCount++, not dirty, etc)
 
-
-
-
-
+    //INCREMENT_CLOCK:
+    //Next loop
+    //Increment clock
 }
 
 	
@@ -103,7 +111,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 const Status BufMgr::unPinPage(File* file, const int PageNo, 
 			       const bool dirty) 
 {
-
+    
 
 
 

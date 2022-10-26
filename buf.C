@@ -81,6 +81,7 @@ const Status BufMgr::allocBuf(int & frame)
           //}
           //use page
           //make sure flags are set correctly (pinCount++, not dirty, etc)
+          //set frame to the current frameNo
           //return OK status
         //}
     //}
@@ -116,11 +117,12 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 }
 
 
+//I can take this one -Michael
 const Status BufMgr::unPinPage(File* file, const int PageNo, 
 			       const bool dirty) 
 {
     //make frameNo pointer
-    //hashTable.lookup(file, PageNo, frameNo)
+    //hashTable->lookup(file, PageNo, frameNo)
 
     //if HASHNOTFOUND
         //return HASHNOTFOUND
@@ -136,13 +138,23 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) 
 {
+    //int pagenum
+    //code = file->allocatePage(&pagenum)
+    //if code != OK
+        //return UNIXERR
+    
+    //int frameNo
+    //code = allocBuf(frameNo)
+    //if code != OK
+        //return code
+    
+    //Insert into hashtable
+    //Set frame
 
+    //*pageNo = pagenum
+    //*page = &bufPool[frameNo]
 
-
-
-
-
-
+    //return OK
 }
 
 const Status BufMgr::disposePage(File* file, const int pageNo) 

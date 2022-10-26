@@ -92,10 +92,26 @@ const Status BufMgr::allocBuf(int & frame)
 	
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
+//1. Check if page is in buffer pool by invoking lookup(const File* file, const int pageNo, int & frameNo) FRom BufHashTbl
+//1a. lookup() returns FrameNO or returns HASHNOTFOUND
 
 
+//lookup() returns HASHNOTFOUND
+    //call allocBuf() to allocate a bufferFrame
+    //file->readPage() to read page from disk into buffer pool frame
+    //insert page into hashtable
+    //Set() on frame (leaves pinCnt for the page to 1)
+    //modify ptr to frame containing page, via page param
 
+//lookup() returns FrameNO
+    //set appropriate reference bit on BufDesc (frame)
+    //increment pinCnt on BufDesc (Frame)
+    //modify ptr to frame containing the page, via page param
 
+//return OK on no errors
+//return UNIXERR if unixerror occurred
+//return BUFFEREXCEEDED if all buffer frames are pinnned
+//return HASHTBLERROR
 
 }
 

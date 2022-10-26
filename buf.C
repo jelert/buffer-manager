@@ -93,18 +93,33 @@ const Status BufMgr::allocBuf(int & frame)
 	
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
-//1. Check if page is in buffer pool by invoking lookup(const File* file, const int pageNo, int & frameNo) FRom BufHashTbl
-//1a. lookup() returns FrameNO or returns HASHNOTFOUND
+//1. Check if page is in buffer pool by invoking lookup() FRom BufHashTbl
+    
+    //int* frameNo = (int*) malloc(sizeof(int));
+    //if(hashTable.lookup(file, pageNo, frameNo) == HASHNOTFOUND){
+        //A
+
+    //}else{
+        //B
+   // }
 
 
-//lookup() returns HASHNOTFOUND
-    //call allocBuf() to allocate a bufferFrame
+//Status s = functioncall();
+//then check status 
+
+//A. lookup() returns HASHNOTFOUND
+    //call allocBuf(&frameNo) to allocate a bufferFrame
+        //allocBuf(frameNo) Returns BUFFEREXCEEDED or UNIXERR or OK 
     //file->readPage() to read page from disk into buffer pool frame
+        //file.readPage(pageNo, page) returns OK or UNIXERR or BADPAGENO or BADPAGEPTR
+        //BADPAGENO / BADPAGEPTR considered UNIXERR?
     //insert page into hashtable
+        //hashTable.insert(file, pageNo, &frameNo) returns OK or HASHTBLERROR
     //Set() on frame (leaves pinCnt for the page to 1)
+        
     //modify ptr to frame containing page, via page param
 
-//lookup() returns FrameNO
+//B. lookup() returns FrameNO
     //set appropriate reference bit on BufDesc (frame)
     //increment pinCnt on BufDesc (Frame)
     //modify ptr to frame containing the page, via page param

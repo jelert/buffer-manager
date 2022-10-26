@@ -65,20 +65,28 @@ BufMgr::~BufMgr() {
 
 const Status BufMgr::allocBuf(int & frame) 
 {
-    //If refbit == 1
-    //  set refbit 0 
-    //  goto increment clock
+    //for(int i = 0; i < numPages; i++, incrementclock()) {
+        //If refbit == 1
+          //set refbit 0 
+          //continue
 
-    //Check current clock position if not pinned and refbit 0
-    //if pincount == 0
-    //  if dirty
-    //      flush page
-    //  use page
-    //  make sure flags are set correctly (pinCount++, not dirty, etc)
+        //Check current clock position if not pinned and refbit 0
+        //if pincount == 0 {
+          //if dirty {
+              //flush page
+              //if error writing page return UNIXERR status
+          //}
+          //if contains valid page {
+            //remove valid page from hash table
+          //}
+          //use page
+          //make sure flags are set correctly (pinCount++, not dirty, etc)
+          //return OK status
+        //}
+    //}
 
-    //INCREMENT_CLOCK:
-    //Next loop
-    //Increment clock
+    //Only reach here if no available frames
+    //return BUFFEREXCEEDED status
 }
 
 	
@@ -95,7 +103,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 const Status BufMgr::unPinPage(File* file, const int PageNo, 
 			       const bool dirty) 
 {
-    
+
 
 
 

@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "buf.C": "cpp"
+        "buf.C": "cpp",
+        "page.C": "cpp"
     }
 }

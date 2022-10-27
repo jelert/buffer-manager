@@ -135,6 +135,7 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 			       const bool dirty) 
 {
     Status status;
+
     int frameNo;
     status = hashTable->lookup(file, PageNo, &frameNo);
 
@@ -156,23 +157,28 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) 
 {
-    //int pagenum
-    //code = file->allocatePage(&pagenum)
-    //if code != OK
-        //return UNIXERR
-    
-    //int frameNo
-    //code = allocBuf(frameNo)
-    //if code != OK
-        //return code
-    
-    //Insert into hashtable
-    //Set frame
+    Status status;
 
-    //*pageNo = pagenum
-    //*page = &bufPool[frameNo]
+    int pageNum;
+    status = file->allocatePage(&pageNum);
+    if(status != OK)
+        return UNIXERR;
+    
+    int frameNo;
+    status = allocBuf(&frameNo);
+    if(status != OK)
+        return status;
+    
+    status = hashTable->insert(file, pageNum, frameNo);
+    if(status != OK)
+        return status;
 
-    //return OK
+    bufTable->Set(file, pageNum);
+
+    *pageNo = pageNum;
+    *page = &bufPool[frameNo];
+
+    return OK;
 }
 
 const Status BufMgr::disposePage(File* file, const int pageNo) 

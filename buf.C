@@ -65,7 +65,7 @@ BufMgr::~BufMgr() {
 
 const Status BufMgr::allocBuf(int & frame) 
 {
-    //for(int i = 0; i < numPages; i++, incrementclock()) {
+    //for(int i = 0; i < numBufs; i++, incrementclock()) {
         //If refbit == 1
           //set refbit 0 
           //continue

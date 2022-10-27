@@ -131,24 +131,27 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 
 }
 
-
-//I can take this one -Michael
 const Status BufMgr::unPinPage(File* file, const int PageNo, 
 			       const bool dirty) 
 {
-    //make frameNo pointer
-    //hashTable->lookup(file, PageNo, frameNo)
+    Status status;
+    int frameNo;
+    status = hashTable->lookup(file, PageNo, &frameNo);
 
-    //if HASHNOTFOUND
-        //return HASHNOTFOUND
+    if(status == HASHNOTFOUND)
+        return HASHNOTFOUND;
     
-    //get bufDesc for frameNo
-    //if bufDesc pinCount == 0
-        //return PAGENOTPINNED
-    //decrement bufDesc pincount
-    //if dirty == true
-        //set dirty bit
-    //return OK
+    BufDesc bufDesc = bufTable[frameNo];
+
+    if(bufDesc.pinCnt == 0)
+        return PAGENOTPINNED;
+
+    bufDesc.pinCnt--;
+
+    if(dirty)
+        bufDesc.dirty = 1;
+
+    return OK;
 }
 
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) 

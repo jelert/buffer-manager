@@ -118,18 +118,10 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
         if(status != OK){
             //BUFFEREXCEEDED or UNIXERR
             return(status);
-        }else{
-            //if valid page, remove entry from HashTable
-            if(bufTable[frameNo].valid == true){
-                status = hashTable->remove(file, PageNo);
-                if(status == HASHTBLERROR){
-                    return(HASHTBLERROR);
-                }
-            }
         }
 
         //Read page from disk into buffer pool frame with file->readPage()
-        status = file->readPage(PageNo, page);
+        status = file->readPage(PageNo, &(bufPool[frameNo]));
         if(status == UNIXERR || status == BADPAGENO || status == BADPAGEPTR){
             return(UNIXERR);
         }
@@ -141,24 +133,25 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
         }
 
         //invoke set() --> pinCnt set to 1
-        bufTable->Set(file, PageNo);
+        bufTable[frameNo].Set(file, PageNo);
 
         //return ptr to frame containing the page via the page param
-        *page = bufPool[frameNo];
+        page = &(bufPool[frameNo]);
 
         return OK;
 
     }else{
         //Page is in buffer pool
+        BufDesc* tmpbuf = &(bufTable[frameNo]);
 
         //set reference bit
-        bufTable[frameNo].refbit = true;
+        tmpbuf->refbit = true;
 
         //increment pinCnt 
-        bufTable[frameNo].pinCnt++;
+        tmpbuf->pinCnt++;
 
         //return ptr to frame containing the page via the page param
-        *page = bufPool[frameNo];
+        page = &(bufPool[frameNo]);;
 
         return OK;
     }
@@ -169,13 +162,12 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 {
     Status status;
 
-    int frameNo;
+    int frameNo = 0;
     status = hashTable->lookup(file, PageNo, frameNo);
-
     if(status == HASHNOTFOUND){
         return HASHNOTFOUND;
     }
-    
+
     BufDesc* tmpbuf = &(bufTable[frameNo]);
 
     if(tmpbuf->pinCnt == 0){
@@ -208,7 +200,7 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
     if(status != OK){
         return status;
     }
-    bufTable->Set(file, pageNum);
+    bufTable[frameNo].Set(file, pageNum);
 
     pageNo = pageNum;
     page = &bufPool[frameNo];

@@ -65,8 +65,14 @@ BufMgr::~BufMgr() {
 
 const Status BufMgr::allocBuf(int & frame) 
 {
+    advanceClock();
     for (int i = 0; i < numBufs * 2; i++) {
         BufDesc* tmpbuf = &(bufTable[clockHand]);
+        if (tmpbuf->valid == false) {
+            frame = clockHand;
+            return OK;
+        }
+
         if(tmpbuf->refbit == true) {
             tmpbuf->refbit = false;
             advanceClock();
@@ -81,7 +87,7 @@ const Status BufMgr::allocBuf(int & frame)
                 
                 // if error writing page return UNIXERR status            
                 if(status != OK){
-                    return UNIXERR;
+                    return status;
                 }
                 tmpbuf->dirty = false;
             }                
@@ -116,20 +122,19 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
         status = allocBuf(frameNo);
 
         if(status != OK){
-            //BUFFEREXCEEDED or UNIXERR
-            return(status);
+            return status;
         }
 
         //Read page from disk into buffer pool frame with file->readPage()
         status = file->readPage(PageNo, &(bufPool[frameNo]));
-        if(status == UNIXERR || status == BADPAGENO || status == BADPAGEPTR){
-            return(UNIXERR);
+        if(status != OK){
+            return status;
         }
 
         //insert page into hashtable
         status = hashTable->insert(file, PageNo, frameNo);
-        if(status == HASHTBLERROR){
-            return(HASHTBLERROR);
+        if(status != OK){
+            return status;
         }
 
         //invoke set() --> pinCnt set to 1
@@ -164,8 +169,8 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 
     int frameNo = 0;
     status = hashTable->lookup(file, PageNo, frameNo);
-    if(status == HASHNOTFOUND){
-        return HASHNOTFOUND;
+    if(status != OK){
+        return status;
     }
 
     BufDesc* tmpbuf = &(bufTable[frameNo]);
@@ -176,8 +181,9 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 
     tmpbuf->pinCnt--;
 
-    if(dirty)
+    if(dirty) {
         tmpbuf->dirty = true;
+    }
 
     return OK;
 }
@@ -186,16 +192,18 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
     Status status;
 
-    int pageNum;
+    int pageNum = 0;
     status = file->allocatePage(pageNum);
     if(status != OK) {
-        return UNIXERR;
+        return status;
     }
+
     int frameNo;
     status = allocBuf(frameNo);
     if(status != OK){
         return status;
     }
+
     status = hashTable->insert(file, pageNum, frameNo);
     if(status != OK){
         return status;

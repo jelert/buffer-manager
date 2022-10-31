@@ -79,7 +79,7 @@ const Status BufMgr::allocBuf(int & frame)
             if (tmpbuf->pinCnt == 0) {
                 if (tmpbuf->dirty == true) {
                     //flush page
-                    Status status = tmpbuf->file->writePage(tmpbuf->pageNo, &(bufPool[i]));
+                    Status status = flushFile(tmpbuf->file);
                     
                     // if error writing page return UNIXERR status            
                     if(status != OK){
@@ -89,7 +89,8 @@ const Status BufMgr::allocBuf(int & frame)
                 }                
 
                 //remove valid page from hash table and bufPool
-                
+                disposePage(tmpbuf->file, tmpbuf->pageNo);
+
                 //use page
                 frame = clockHand;
                 return OK;            

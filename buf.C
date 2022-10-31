@@ -67,11 +67,12 @@ const Status BufMgr::allocBuf(int & frame)
 {
     for (int i = 0; i < numBufs * 2; i++) {
         BufDesc* tmpbuf = &(bufTable[clockHand]);
-        if (tmpbuf->valid == true && tmpbuf->file == file) {
+        if (tmpbuf->valid == true && tmpbuf->file != NULL) {
         
             //Check current clock position if not pinned and refbit 0
             if(tmpbuf->refbit == 1) {
                 tmpbuf->refbit = 0;
+                advanceClock();
                 continue;
             }
             
@@ -173,7 +174,7 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
     Status status;
 
     int frameNo;
-    status = hashTable->lookup(file, PageNo, &frameNo);
+    status = hashTable->lookup(file, PageNo, frameNo);
 
     if(status == HASHNOTFOUND)
         return HASHNOTFOUND;
@@ -196,12 +197,12 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
     Status status;
 
     int pageNum;
-    status = file->allocatePage(&pageNum);
+    status = file->allocatePage(pageNum);
     if(status != OK)
         return UNIXERR;
     
     int frameNo;
-    status = allocBuf(&frameNo);
+    status = allocBuf(frameNo);
     if(status != OK)
         return status;
     
@@ -211,8 +212,8 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 
     bufTable->Set(file, pageNum);
 
-    *pageNo = pageNum;
-    *page = &bufPool[frameNo];
+    pageNo = pageNum;
+    page = &bufPool[frameNo];
 
     return OK;
 }

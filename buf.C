@@ -67,35 +67,31 @@ const Status BufMgr::allocBuf(int & frame)
 {
     for (int i = 0; i < numBufs * 2; i++) {
         BufDesc* tmpbuf = &(bufTable[clockHand]);
-        if (tmpbuf->valid == true && tmpbuf->file != NULL) {
+        if(tmpbuf->refbit == true) {
+            tmpbuf->refbit = false;
+            advanceClock();
+            continue;
+        }
         
-            //Check current clock position if not pinned and refbit 0
-            if(tmpbuf->refbit == 1) {
-                tmpbuf->refbit = 0;
-                advanceClock();
-                continue;
-            }
-            
 
-            if (tmpbuf->pinCnt == 0) {
-                if (tmpbuf->dirty == true) {
-                    //flush page
-                    Status status = flushFile(tmpbuf->file);
-                    
-                    // if error writing page return UNIXERR status            
-                    if(status != OK){
-                        return UNIXERR;
-                    }
-                    tmpbuf->dirty = false;
-                }                
+        if (tmpbuf->pinCnt == 0) {
+            if (tmpbuf->dirty == true) {
+                //flush page
+                Status status = flushFile(tmpbuf->file);
+                
+                // if error writing page return UNIXERR status            
+                if(status != OK){
+                    return UNIXERR;
+                }
+                tmpbuf->dirty = false;
+            }                
 
-                //remove valid page from hash table and bufPool
-                disposePage(tmpbuf->file, tmpbuf->pageNo);
+            //remove valid page from hash table and bufPool
+            disposePage(tmpbuf->file, tmpbuf->pageNo);
 
-                //use page
-                frame = clockHand;
-                return OK;            
-            }
+            //use page
+            frame = clockHand;
+            return OK;            
         }
         advanceClock();
     }
@@ -176,18 +172,20 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
     int frameNo;
     status = hashTable->lookup(file, PageNo, frameNo);
 
-    if(status == HASHNOTFOUND)
+    if(status == HASHNOTFOUND){
         return HASHNOTFOUND;
+    }
     
-    BufDesc bufDesc = bufTable[frameNo];
+    BufDesc* tmpbuf = &(bufTable[frameNo]);
 
-    if(bufDesc.pinCnt == 0)
+    if(tmpbuf->pinCnt == 0){
         return PAGENOTPINNED;
+    }
 
-    bufDesc.pinCnt--;
+    tmpbuf->pinCnt--;
 
     if(dirty)
-        bufDesc.dirty = 1;
+        tmpbuf->dirty = true;
 
     return OK;
 }
@@ -198,18 +196,18 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 
     int pageNum;
     status = file->allocatePage(pageNum);
-    if(status != OK)
+    if(status != OK) {
         return UNIXERR;
-    
+    }
     int frameNo;
     status = allocBuf(frameNo);
-    if(status != OK)
+    if(status != OK){
         return status;
-    
+    }
     status = hashTable->insert(file, pageNum, frameNo);
-    if(status != OK)
+    if(status != OK){
         return status;
-
+    }
     bufTable->Set(file, pageNum);
 
     pageNo = pageNum;

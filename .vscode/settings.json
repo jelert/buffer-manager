@@ -1,6 +1,10 @@
 {
     "files.associations": {
         "buf.C": "cpp",
-        "page.C": "cpp"
+        "page.C": "cpp",
+        "error.C": "cpp",
+        "db.C": "cpp",
+        "bufHash.C": "cpp",
+        "testbuf.C": "cpp"
     }
 }

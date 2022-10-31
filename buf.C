@@ -65,29 +65,41 @@ BufMgr::~BufMgr() {
 
 const Status BufMgr::allocBuf(int & frame) 
 {
-    //for(int i = 0; i < numBufs; i++, incrementclock()) {
-        //If refbit == 1
-          //set refbit 0 
-          //continue
+    for (int i = 0; i < numBufs * 2; i++) {
+        BufDesc* tmpbuf = &(bufTable[clockHand]);
+        if (tmpbuf->valid == true && tmpbuf->file == file) {
+        
+            //Check current clock position if not pinned and refbit 0
+            if(tmpbuf->refbit == 1) {
+                tmpbuf->refbit = 0;
+                continue;
+            }
+            
 
-        //Check current clock position if not pinned and refbit 0
-        //if pincount == 0 {
-          //if dirty {
-              //flush page
-              //if error writing page return UNIXERR status
-          //}
-          //if contains valid page {
-            //remove valid page from hash table
-          //}
-          //use page
-          //make sure flags are set correctly (pinCount++, not dirty, etc)
-          //set frame to the current frameNo
-          //return OK status
-        //}
-    //}
+            if (tmpbuf->pinCnt == 0) {
+                if (tmpbuf->dirty == true) {
+                    //flush page
+                    Status status = tmpbuf->file->writePage(tmpbuf->pageNo, &(bufPool[i]));
+                    
+                    // if error writing page return UNIXERR status            
+                    if(status != OK){
+                        return UNIXERR;
+                    }
+                    tmpbuf->dirty = false;
+                }                
+
+                //remove valid page from hash table and bufPool
+                
+                //use page
+                frame = clockHand;
+                return OK;            
+            }
+        }
+        advanceClock();
+    }
 
     //Only reach here if no available frames
-    //return BUFFEREXCEEDED status
+    return BUFFEREXCEEDED;
 }
 
 	

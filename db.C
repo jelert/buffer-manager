@@ -291,6 +291,7 @@ Status File::allocatePage(int& pageNo)
 
 const Status File::disposePage(const int pageNo)
 {
+  cout << "DISPOSING PAGE " << pageNo << "\n";
   if (pageNo < 1)
     return BADPAGENO;
 
@@ -300,6 +301,7 @@ const Status File::disposePage(const int pageNo)
   if ((status = intread(0, &header)) != OK)
     return status;
 
+  cout << "DISPOSING PAGE intread " << pageNo << "\n";
   // The first user-allocated page in the file cannot be
   // disposed of. The File layer has no knowledge of what
   // is the next page in the file and hence would not be
@@ -308,6 +310,7 @@ const Status File::disposePage(const int pageNo)
   if (DBP(header).firstPage == pageNo || pageNo >= DBP(header).numPages)
     return BADPAGENO;
 
+  cout << "DISPOSING PAGE DBP " << pageNo << "\n";
   // Deallocate page by attaching it to the free list.
 
   Page away;

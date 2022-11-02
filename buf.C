@@ -65,6 +65,8 @@ BufMgr::~BufMgr() {
 
 const Status BufMgr::allocBuf(int & frame) 
 {
+    Status status;
+
     advanceClock();
     for (int i = 0; i < numBufs * 2; i++) {
         BufDesc* tmpbuf = &(bufTable[clockHand]);
@@ -89,11 +91,13 @@ const Status BufMgr::allocBuf(int & frame)
                 if(status != OK){
                     return status;
                 }
-                tmpbuf->dirty = false;
-            }                
-
-            //remove valid page from hash table and bufPool
-            disposePage(tmpbuf->file, tmpbuf->pageNo);
+            } else {
+                //remove valid page from hash table and bufPool
+                status = disposePage(tmpbuf->file, tmpbuf->pageNo);  
+                if(status != OK){
+                    return status;
+                }
+            }
 
             //use page
             frame = clockHand;
@@ -156,7 +160,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
         tmpbuf->pinCnt++;
 
         //return ptr to frame containing the page via the page param
-        page = &(bufPool[frameNo]);;
+        page = &(bufPool[frameNo]);
 
         return OK;
     }
@@ -166,8 +170,8 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 			       const bool dirty) 
 {
     Status status;
-
     int frameNo = 0;
+
     status = hashTable->lookup(file, PageNo, frameNo);
     if(status != OK){
         return status;
@@ -192,8 +196,7 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
     Status status;
 
-    int pageNum = 0;
-    status = file->allocatePage(pageNum);
+    status = file->allocatePage(pageNo);
     if(status != OK) {
         return status;
     }
@@ -203,14 +206,11 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
     if(status != OK){
         return status;
     }
-
-    status = hashTable->insert(file, pageNum, frameNo);
+    status = hashTable->insert(file, pageNo, frameNo);
     if(status != OK){
         return status;
     }
-    bufTable[frameNo].Set(file, pageNum);
-
-    pageNo = pageNum;
+    bufTable[frameNo].Set(file, pageNo);
     page = &bufPool[frameNo];
 
     return OK;

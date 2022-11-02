@@ -67,8 +67,8 @@ const Status BufMgr::allocBuf(int & frame)
 {
     Status status;
 
-    advanceClock();
     for (int i = 0; i < numBufs * 2; i++) {
+
         BufDesc* tmpbuf = &(bufTable[clockHand]);
         if (tmpbuf->valid == false) {
             frame = clockHand;
@@ -85,15 +85,19 @@ const Status BufMgr::allocBuf(int & frame)
         if (tmpbuf->pinCnt == 0) {
             if (tmpbuf->dirty == true) {
                 //flush page
-                Status status = flushFile(tmpbuf->file);
+                Status status = tmpbuf->file->writePage(tmpbuf->pageNo, &(bufPool[clockHand]));
                 
                 // if error writing page return UNIXERR status            
                 if(status != OK){
                     return status;
                 }
-            } else {
-                //remove valid page from hash table and bufPool
-                status = disposePage(tmpbuf->file, tmpbuf->pageNo);  
+            } 
+            //remove valid page from hash table
+            int tmpclock;
+            tmpclock = clockHand;
+            status = hashTable->lookup(tmpbuf->file, tmpbuf->pageNo, tmpclock);
+            if(status == OK){
+                status = hashTable->remove(tmpbuf->file, tmpbuf->pageNo);
                 if(status != OK){
                     return status;
                 }

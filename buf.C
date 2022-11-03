@@ -1,7 +1,7 @@
 //----------------------------------------
 // Group 9 Project 4
 // 1. Joe Elert - 9081168636
-// 2. Derek Calamari -
+// 2. Derek Calamari - 9081197635
 // 3. Michael Feist - 
 //----------------------------------------
 #include <memory.h>
@@ -112,7 +112,13 @@ const Status BufMgr::allocBuf(int & frame)
     return BUFFEREXCEEDED;
 }
 
-	
+
+
+/**
+ * ReadPage method
+ * Parameters: File* file, int pageNo, Page *&page
+ * Returns: ptr to frame containing the page
+**/
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
     //Invoke hashTable lookup

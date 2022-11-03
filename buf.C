@@ -93,15 +93,7 @@ const Status BufMgr::allocBuf(int & frame)
                 }
             } 
             //remove valid page from hash table
-            int tmpclock;
-            tmpclock = clockHand;
-            status = hashTable->lookup(tmpbuf->file, tmpbuf->pageNo, tmpclock);
-            if(status == OK){
-                status = hashTable->remove(tmpbuf->file, tmpbuf->pageNo);
-                if(status != OK){
-                    return status;
-                }
-            }
+            hashTable->remove(tmpbuf->file, tmpbuf->pageNo);
 
             //use page
             frame = clockHand;

@@ -2,7 +2,7 @@
 // Group 9 Project 4
 // 1. Joe Elert - 9081168636
 // 2. Derek Calamari - 9081197635
-// 3. Michael Feist - 
+// 3. Michael Feist - 9082159105
 //----------------------------------------
 #include <memory.h>
 #include <unistd.h>
@@ -174,6 +174,17 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
     }
 }
 
+/**
+ * Decrements the pinCnt of the frame corresponding
+ * to the given file and PageNo. If dirty is true,
+ * also sets the dirty bit.
+ * 
+ * @author          Michael Feist
+ * @param file      File of corresponding frame
+ * @param PageNo    Page number of corresponding frame
+ * @param dirty     True if dirty bit should be set to true, false otherwise
+ * @return          OK if successful, hashTable->lookup error status if lookup fails, or PAGENOTPINNED if pinCnt == 0
+*/
 const Status BufMgr::unPinPage(File* file, const int PageNo, 
 			       const bool dirty) 
 {
@@ -200,6 +211,20 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
     return OK;
 }
 
+/**
+ * Allocates a new page within the given file and a 
+ * corresponding frame within the buffer manager.
+ * Adds the entry to the hashtable and intializes
+ * its buftable entry. Gives back the corresponding
+ * page number, and a pointer to the newly allocated
+ * frame within the buffer pool.
+ * 
+ * @author          Michael Feist
+ * @param   file    File to allocate page in
+ * @param   pageNo  Page number of page allocated will be written back here
+ * @param   page    Pointer to frame in bufferpool will be written back here
+ * @return          OK if successful, otherwise returns error status from file->allocatePage, allocBuf, or hashTable->insert
+*/
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) 
 {
     Status status;

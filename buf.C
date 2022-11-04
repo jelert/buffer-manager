@@ -156,10 +156,19 @@ const Status BufMgr::allocBuf(int & frame)
 
 
 /**
- * ReadPage method
- * Parameters: File* file, int pageNo, Page *&page
- * Returns: ptr to frame containing the page
-**/
+ * Checks whether page is in buffer pool. 
+ * 1. If page is not in buffer pool, allocate buffer frame, read page from disk into frame,
+ * insert page into hashtable, Set frame, then give pointer to the frame containing the page
+ * 2. If page is in buffer pool, set reference bit, increment pin count, then give pointer
+ * to the frame containing the page.
+ * 
+ * @author          Derek Calamari
+ * @param file      File of corresponding frame
+ * @param PageNo    Page number of corresponding frame
+ * @param page      Page of corresponding page number 
+ * @return          Status- OK if no errors occurred, UNIXERR if a Unix error occurred, 
+ *                  BUFFEREXCEEDED if all buffer frames are pinned, HASHTBLERROR if a hash table error occurred.
+*/
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
     //Invoke hashTable lookup

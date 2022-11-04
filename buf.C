@@ -14,6 +14,26 @@
 #include "page.h"
 #include "buf.h"
 
+/**
+* The buffer manager controls the reading
+* and writing of pages from the disk to
+* the buffer pool.  It is also responsible
+* for keeping track of which pages are in
+* the buffer pool. 
+*
+* Global Variables:
+*   numBufs - number of buffers in the buffer pool
+*   bufPool - the buffer pool which stores 
+*             pointers to pages read from disk
+*   bufTable - the buffer table which stores
+*              information about each frame
+*              such as pin count, dirty bit, etc.
+*   hashTable - the hash table that stores
+*               the mapping between pages and frames
+*   clockHand - the clock hand that points at
+*               the current frame
+*/
+
 #define ASSERT(c)  { if (!(c)) { \
 		       cerr << "At line " << __LINE__ << ":" << endl << "  "; \
                        cerr << "This condition should hold: " #c << endl; \
@@ -69,6 +89,27 @@ BufMgr::~BufMgr() {
 }
 
 
+/**
+ * AllocBuf method finds the next frame to be replaced in the buffer pool
+ * via the clock algorithm.  The clock algorithm works as follows:
+ * 
+ * 1. Start at the frame pointed to by the clock hand
+ * 2. If the frame is invalid, use it
+ * 3. If the frame is valid and the reference bit is set, clear the reference bit
+ *   and advance the clock hand
+ * 4. If the frame is valid and the reference bit is not set, check the pin count
+ *  a. If the pin count is 0, check the dirty bit
+ *   i. If the dirty bit is set, write the page to disk
+ *  b. Remove the page from the hash table
+ *  c. Use the frame
+ * 5. Else advance the clock hand and repeat steps 2-4
+ * 
+ * @author Joe Elert
+ * @param  int & frame - the newly allocated frame to be used
+ * @return Status - OK if successful, BUFFEREXCEEDED if no frames available, 
+ *                  ERROR if any other errors occur in method calls
+ * 
+ */
 const Status BufMgr::allocBuf(int & frame) 
 {
     Status status;
